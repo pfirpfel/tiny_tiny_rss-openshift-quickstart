@@ -91,7 +91,7 @@ function editUser(id, event) {
 		new Ajax.Request("backend.php",	{
 			parameters: query,
 			onComplete: function(transport) {
-					infobox_callback2(transport);
+					infobox_callback2(transport, __("User Editor"));
 					document.forms['user_edit_form'].login.focus();
 				} });
 
@@ -547,7 +547,7 @@ function resetSelectedUserPass() {
 			new Ajax.Request("backend.php", {
 				parameters: query,
 				onComplete: function(transport) {
-					notify_info(transport.responseText);
+					notify_info(transport.responseText, true);
 				} });
 
 		}
@@ -582,7 +582,7 @@ function selectedUserDetails() {
 		new Ajax.Request("backend.php",	{
 			parameters: query,
 			onComplete: function(transport) {
-					infobox_callback2(transport);
+					infobox_callback2(transport, __("User details"));
 				} });
 	} catch (e) {
 		exception_error("selectedUserDetails", e);
@@ -722,6 +722,13 @@ function editSelectedFeeds() {
 								}
 							} catch (e) { }
 
+							try {
+								if (!query.match("&hide_images=") &&
+										this.getChildByName('hide_images').attr('disabled') == false) {
+									query = query + "&hide_images=false";
+								}
+							} catch (e) { }
+
 							if (!query.match("&include_in_digest=") &&
 									this.getChildByName('include_in_digest').attr('disabled') == false) {
 								query = query + "&include_in_digest=false";
@@ -757,18 +764,6 @@ function editSelectedFeeds() {
 
 	} catch (e) {
 		exception_error("editSelectedFeeds", e);
-	}
-}
-
-function piggie(enable) {
-	if (enable) {
-		console.log("I LOVEDED IT!");
-		var piggie = $("piggie");
-
-		Element.show(piggie);
-		Position.Center(piggie);
-		Effect.Puff(piggie);
-
 	}
 }
 
@@ -857,6 +852,15 @@ function updatePrefsList() {
 		} });
 }
 
+function updateSystemList() {
+	new Ajax.Request("backend.php", {
+		parameters: "?op=pref-system",
+		onComplete: function(transport) {
+			dijit.byId('systemConfigTab').attr('content', transport.responseText);
+			notify("");
+		} });
+}
+
 function selectTab(id, noupdate, method) {
 	try {
 		if (!noupdate) {
@@ -872,6 +876,8 @@ function selectTab(id, noupdate, method) {
 				updatePrefsList();
 			} else if (id == "userConfig") {
 				updateUsersList();
+			} else if (id == "systemConfig") {
+				updateSystemList();
 			}
 
 			var tab = dijit.byId(id + "Tab");
@@ -980,13 +986,8 @@ function validatePrefsReset() {
 			new Ajax.Request("backend.php", {
 				parameters: query,
 				onComplete: function(transport) {
-					var msg = transport.responseText;
-					if (msg.match("PREFS_THEME_CHANGED")) {
-						window.location.reload();
-					} else {
-						notify_info(msg);
-						selectTab();
-					}
+					updatePrefsList();
+					notify_info(transport.responseText);
 				} });
 
 		}
@@ -1226,7 +1227,7 @@ function opmlRegenKey() {
 
 			notify_progress("Trying to change address...", true);
 
-			var query = "?op=rpc&method=regenOPMLKey";
+			var query = "?op=pref-feeds&method=regenOPMLKey";
 
 			new Ajax.Request("backend.php", {
 				parameters: query,
@@ -1405,7 +1406,7 @@ function editProfiles() {
 		if (dijit.byId("profileEditDlg"))
 			dijit.byId("profileEditDlg").destroyRecursive();
 
-		var query = "backend.php?op=dlg&method=editPrefProfiles";
+		var query = "backend.php?op=pref-prefs&method=editPrefProfiles";
 
 		dialog = new dijit.Dialog({
 			id: "profileEditDlg",
@@ -1526,7 +1527,7 @@ function clearFeedAccessKeys() {
 	if (ok) {
 		notify_progress("Clearing URLs...");
 
-		var query = "?op=rpc&method=clearKeys";
+		var query = "?op=pref-feeds&method=clearKeys";
 
 		new Ajax.Request("backend.php", {
 			parameters: query,
@@ -1556,6 +1557,24 @@ function clearArticleAccessKeys() {
 
 	return false;
 }
+
+function resetFilterOrder() {
+	try {
+		notify_progress("Loading, please wait...");
+
+		new Ajax.Request("backend.php", {
+			parameters: "?op=pref-filters&method=filtersortreset",
+			onComplete: function(transport) {
+		  		updateFilterList();
+			} });
+
+
+	} catch (e) {
+		exception_error("resetFilterOrder");
+	}
+}
+
+
 function resetFeedOrder() {
 	try {
 		notify_progress("Loading, please wait...");
@@ -1699,31 +1718,10 @@ function editLabel(id, event) {
 	}
 }
 
-function clearTwitterCredentials() {
-	try {
-		var ok = confirm(__("This will clear your stored authentication information for Twitter. Continue?"));
-
-		if (ok) {
-			notify_progress("Clearing credentials...");
-
-			var query = "?op=pref-feeds&method=remtwitterinfo";
-
-			new Ajax.Request("backend.php", {
-				parameters: query,
-				onComplete: function(transport) {
-					notify_info("Twitter credentials have been cleared.");
-					updateFeedList();
-				} });
-		}
-
-	} catch (e) {
-		exception_error("clearTwitterCredentials", e);
-	}
-}
 
 function customizeCSS() {
 	try {
-		var query = "backend.php?op=dlg&method=customizeCSS";
+		var query = "backend.php?op=pref-prefs&method=customizeCSS";
 
 		if (dijit.byId("cssEditDlg"))
 			dijit.byId("cssEditDlg").destroyRecursive();
@@ -1767,7 +1765,7 @@ function gotoExportOpml(filename, settings) {
 
 function batchSubscribe() {
 	try {
-		var query = "backend.php?op=dlg&method=batchSubscribe";
+		var query = "backend.php?op=pref-feeds&method=batchSubscribe";
 
 		// overlapping widgets
 		if (dijit.byId("batchSubDlg")) dijit.byId("batchSubDlg").destroyRecursive();

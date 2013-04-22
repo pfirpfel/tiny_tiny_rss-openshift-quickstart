@@ -1,5 +1,3 @@
-<?php global $link; ?>
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -7,38 +5,56 @@
 <head>
 	<title>Tiny Tiny RSS</title>
 
-	<link rel="stylesheet" type="text/css" href="lib/dijit/themes/claro/claro.css"/>
-	<link rel="stylesheet" type="text/css" href="plugins/digest/digest.css?<?php echo $dt_add ?>"/>
+	<?php
+		require_once "lib/Mobile_Detect.php";
+		$mobile = new Mobile_Detect();
+
+		if ($mobile->isMobile() || @$_REQUEST['mode'] == 'mobile') {
+			$_SESSION["digest_mobile"] = 1;
+			echo stylesheet_tag("plugins/digest/mobile.css");
+		} else {
+			$_SESSION["digest_mobile"] = 0;
+			echo stylesheet_tag("plugins/digest/digest.css");
+		}
+	?>
+
+	<meta name="viewport" content="width=device-width,
+		minimum-scale=1.0, maximum-scale=1.0" />
 
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-	<?php print_user_stylesheet($link) ?>
+	<?php print_user_stylesheet(); ?>
 
 	<link rel="shortcut icon" type="image/png" href="images/favicon.png"/>
 
-	<script type="text/javascript" src="lib/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
-	<script type="text/javascript" src="lib/prototype.js"></script>
-	<script type="text/javascript" src="lib/scriptaculous/scriptaculous.js?load=effects,dragdrop,controls"></script>
+	<?php
+	foreach (array("lib/prototype.js",
+				"lib/scriptaculous/scriptaculous.js?load=effects,dragdrop,controls",
+				"js/functions.js",
+				"plugins/digest/digest.js",
+				"errors.php?mode=js") as $jsfile) {
 
-	<script type="text/javascript" charset="utf-8" src="localized_js.php?<?php echo $dt_add ?>"></script>
-	<script type="text/javascript" charset="utf-8" src="errors.php?mode=js"></script>
-	<script type="text/javascript" charset="utf-8" src="js/functions.js?<?php echo $dt_add ?>"></script>
+		echo javascript_tag($jsfile);
+	} ?>
+
+	<script type="text/javascript">
+	<?php init_js_translations(); ?>
+	</script>
+
 	<script type="text/javascript" src="plugins/digest/digest.js"></script>
 
 	<script type="text/javascript">
 		Event.observe(window, 'load', function() {
-			init();
+			init(<?php echo $_SESSION["digest_mobile"] ?>);
 		});
 	</script>
 </head>
-<body id="ttrssDigest" class="claro">
+<body id="ttrssDigest">
 	<div id="overlay" style="display : block">
 		<div id="overlay_inner">
 		<noscript>
 			<p>
-			<?php print_error(__("Your browser doesn't support Javascript, which is required
-			for this application to function properly. Please check your
-			browser settings.")) ?></p>
+			<?php print_error(__("Your browser doesn't support Javascript, which is required for this application to function properly. Please check your browser settings.")) ?></p>
 		</noscript>
 
 		<img src="images/indicator_white.gif"/>
@@ -47,8 +63,8 @@
 	</div>
 
 	<div id="header">
-	<a style="float : left" href="#" onclick="close_article()">
-		<?php echo __("Back to feeds") ?></a>
+	<a style="float : left" href="#" onclick="go_back()">
+		<?php echo __("Go back") ?></a>
 
 	<div class="links">
 

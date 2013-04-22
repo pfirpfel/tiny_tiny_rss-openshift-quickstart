@@ -24,6 +24,13 @@
 	// You need to set this option correctly otherwise several features
 	// including PUSH, bookmarklets and browser integration will not work properly.
 
+  define('FEED_CRYPT_KEY', '');
+	// Key used for encryption of passwords for password-protected feeds
+	// in the database. A string of 24 random characters. If left blank, encryption
+	// is not used. Requires mcrypt functions.
+	// Warning: changing this key will make your stored feed passwords impossible
+	// to decrypt.
+  
 	define('SINGLE_USER_MODE', false);
 	// Operate in single user mode, disables all functionality related to
 	// multiple users.
@@ -99,6 +106,9 @@
 	define('SPHINX_ENABLED', false);
 	// Enable fulltext search using Sphinx (http://www.sphinxsearch.com)
 	// Please see http://tt-rss.org/wiki/SphinxSearch for more information.
+  
+  define('SPHINX_SERVER', 'localhost:9312');
+	// Hostname:port combination for the Sphinx server.
 
 	define('SPHINX_INDEX', 'ttrss');
 	// Index name in Sphinx configuration. You can specify multiple indexes
@@ -125,13 +135,13 @@
 	// *** Cookies and login sessions ***
 	// **********************************
 	
-	define('SESSION_COOKIE_LIFETIME', 0);
+	define('SESSION_COOKIE_LIFETIME', 86400);
 	// Default lifetime of a session (e.g. login) cookie. In seconds, 
 	// 0 means cookie will be deleted when browser closes.
-
-	define('SESSION_EXPIRE_TIME', 86400);
-	// Hard expiration limit for sessions. Should be
-	// greater or equal to SESSION_COOKIE_LIFETIME
+	// Setting this to zero will affect several user preferences
+	// like widescreen mode not saving and disable "remember me".
+	// Note that if remember me is not checked, session cookie
+	// will always expire with browser session.
 
 	define('SESSION_CHECK_ADDRESS', 1);
 	// Check client IP address when validating session:
@@ -180,6 +190,12 @@
 	// authentication plugin here (auth_*).
 	// Users may enable other user plugins from Preferences/Plugins but may not
 	// disable plugins specified in this list.
+  
+  define('LOG_DESTINATION', 'sql');
+	// Log destination to use. Possible values: sql (uses internal logging
+	// you can read in Preferences -> System), syslog - logs to system log.
+	// Setting this to blank uses PHP logging (usually to http server 
+	// error.log).
 
 	define('CONFIG_VERSION', 26);
 	// Expected config version. Please update this option in config.php
